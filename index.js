@@ -65,7 +65,10 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: 'https://frontend-ygau.vercel.app',
+    origin: [
+      'https://frontend-ygau.vercel.app',
+      /\.vercel\.app$/
+    ],
     credentials: true,
   })
 );
