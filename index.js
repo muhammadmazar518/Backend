@@ -65,7 +65,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5175"],
+    origin: 'https://frontend-inky-eight-34.vercel.app',
     credentials: true,
   })
 );
