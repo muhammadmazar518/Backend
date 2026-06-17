@@ -20,7 +20,7 @@ router.get(
   }),
   (req, res) => {
     const { token } = req.user;
-    res.redirect(`http://localhost:5173/auth/callback?token=${token}`);
+    res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);
   }
 );
 
