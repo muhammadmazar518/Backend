@@ -69,6 +69,7 @@ app.use(
   cors({
     origin: [
       'https://frontend-ygau.vercel.app',
+      'http://localhost:5173',
       /\.vercel\.app$/
     ],
     credentials: true,
