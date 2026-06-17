@@ -22,6 +22,7 @@ app.post(
   express.raw({ type: "application/json" }),
   async (req, res) => {
     const sig = req.headers["stripe-signature"];
+
     let event;
 
     try {
@@ -37,6 +38,7 @@ app.post(
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
+
       const userId = session.metadata?.userId;
       const customerEmail = session.customer_details?.email;
 
