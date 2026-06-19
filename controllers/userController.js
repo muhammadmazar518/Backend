@@ -3,7 +3,7 @@ const pool = require("../config/db");
 const getProfile = async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT id, name, email, is_pro, has_purchased, created_at FROM users WHERE id = $1",
+      "SELECT id, name, email, is_pro, has_purchased, created_at, avatar FROM users WHERE id = $1",
       [req.user.id]
     );
 
