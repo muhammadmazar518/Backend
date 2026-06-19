@@ -8,9 +8,9 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL 
+      callbackURL: process.env.GOOGLE_CALLBACK_URL
     },
-    
+
     async (accessToken, refreshToken, profile, done) => {
       try {
         const email = profile.emails[0].value;
@@ -24,10 +24,12 @@ passport.use(
         let user;
 
         if (result.rows.length === 0) {
+
           const insertResult = await pool.query(
-            "INSERT INTO users (name, email, password, is_pro, has_purchased) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-            [name, email, "google_oauth", false, false]
+            "INSERT INTO users (name, email, password, is_pro, has_purchased, avatar) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+            [name, email, "google_oauth", false, false, profile.photos[0]?.value || null]
           );
+
 
           user = insertResult.rows[0];
         } else {
@@ -46,6 +48,7 @@ passport.use(
             email: user.email,
             is_pro: user.is_pro,
             has_purchased: user.has_purchased,
+            avatar: profile.photos[0]?.value || null, // ✅ Google photo add karo
           },
           process.env.JWT_SECRET,
           { expiresIn: "7d" }

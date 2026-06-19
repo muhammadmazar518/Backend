@@ -1,6 +1,7 @@
 const pool = require("../config/db");
 
 const createUsersTable = async () => {
+  
   const query = `
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -15,6 +16,8 @@ const createUsersTable = async () => {
   `;
   try {
     await pool.query(query);
+    // ✅ avatar column add karo agar nahi hai
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT;`);
     console.log("Users table ready");
   } catch (err) {
     console.error("Error creating users table:", err.message);
