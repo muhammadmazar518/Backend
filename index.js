@@ -92,6 +92,8 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/user", require("./routes/userRoutes"));
 app.use("/api/courses", require("./routes/courseRoutes"));
+app.use("/api/services", require("./routes/servicesRoutes"));
+app.use("/api/projects", require("./routes/projectsRoutes"));
 
 const { getDashboardStats } = require("./controllers/userController");
 const { protect } = require("./middleware/authMiddleware");
