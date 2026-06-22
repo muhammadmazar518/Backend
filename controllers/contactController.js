@@ -1,5 +1,5 @@
 const pool = require("../config/db");
-const transporter = require("../config/nodemailer");
+const resend = require("../config/nodemailer");
 
 const sendContactMessage = async (req, res) => {
   const { name, email, subject, message } = req.body;
@@ -18,12 +18,10 @@ const sendContactMessage = async (req, res) => {
       "INSERT INTO contact_messages (name, email, subject, message) VALUES ($1, $2, $3, $4)",
       [name.trim(), email.trim(), subject?.trim() || "", message.trim()]
     );
-    console.log("Contact message saved to DB");
 
     try {
-      await transporter.sendMail({
-        from: `"${name}" <${process.env.EMAIL_USER}>`,
-        replyTo: email,
+      await resend.emails.send({
+        from: "onboarding@resend.dev",
         to: process.env.ADMIN_EMAIL,
         subject: subject ? `[Contact] ${subject}` : "[Contact] New Message",
         html: `
@@ -35,9 +33,8 @@ const sendContactMessage = async (req, res) => {
           <p>${message}</p>
         `,
       });
-      console.log("Contact email sent to", process.env.ADMIN_EMAIL);
     } catch (emailErr) {
-      console.error("Nodemailer send failed:", emailErr.message);
+      console.error("Resend failed:", emailErr.message);
     }
 
     res.json({ success: true, message: "Message sent! We'll reply within 24 hours." });
