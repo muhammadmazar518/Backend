@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 router.post("/", async (req, res) => {
   const { name, email, subject, message } = req.body;
@@ -10,19 +12,8 @@ router.post("/", async (req, res) => {
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com", 
-      port: 587,           
-      secure: false,       
-      family: 4,               
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    await transporter.sendMail({
-      from: `"${name}" <${process.env.EMAIL_USER}>`,
+    await resend.emails.send({
+      from: "onboarding@resend.dev",
       to: process.env.ADMIN_EMAIL,
       subject: subject || `New Contact from ${name}`,
       html: `
