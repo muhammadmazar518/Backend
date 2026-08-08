@@ -1,3 +1,4 @@
+```js
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -6,7 +7,23 @@ const passport = require("passport");
 
 dotenv.config();
 
+// Stripe environment variable check
+console.log(
+  "STRIPE_SECRET_KEY exists:",
+  !!process.env.STRIPE_SECRET_KEY
+);
+
+console.log(
+  "STRIPE_SECRET_KEY length:",
+  process.env.STRIPE_SECRET_KEY?.length
+);
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error("STRIPE_SECRET_KEY is missing");
+}
+
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
 const pool = require("./config/db");
 
 require("./passport");
@@ -15,7 +32,6 @@ const { createCoursesTable } = require("./models/Course");
 const paymentRoutes = require("./routes/paymentRoutes");
 
 const app = express();
-
 
 app.post(
   "/api/payment/webhook",
@@ -68,9 +84,9 @@ app.use(express.json());
 app.use(
   cors({
     origin: [
-      'https://frontend-ygau.vercel.app',
-      'http://localhost:5173',
-      /\.vercel\.app$/
+      "https://frontend-ygau.vercel.app",
+      "http://localhost:5173",
+      /.vercel.app$/,
     ],
     credentials: true,
   })
@@ -87,7 +103,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-
 app.use("/api/payment", paymentRoutes);
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/user", require("./routes/userRoutes"));
@@ -97,7 +112,9 @@ app.use("/api/projects", require("./routes/projectsRoutes"));
 
 const { getDashboardStats } = require("./controllers/userController");
 const { protect } = require("./middleware/authMiddleware");
+
 app.use("/api/contact", require("./routes/contactRoutes"));
+
 app.get("/api/dashboard/stats", protect, getDashboardStats);
 
 app.get("/", (req, res) => {
@@ -113,3 +130,4 @@ createUsersTable().then(() => {
     });
   });
 });
+```
