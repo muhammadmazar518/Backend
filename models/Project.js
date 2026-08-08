@@ -17,7 +17,11 @@ const createProjectsTable = async () => {
     await pool.query(query);
     console.log("Projects table ready");
   } catch (err) {
-    console.error("Error creating projects table:", err.message);
+    console.error(
+      "Error creating projects table:",
+      err.message
+    );
+    throw err;
   }
 };
 

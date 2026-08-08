@@ -1,9 +1,17 @@
 const { Pool } = require("pg");
 require("dotenv").config();
 
+const databaseUrl = process.env.DATABASE_URL;
+
+const isLocalHost = /localhost|127\.0\.0\.1|::1/.test(
+  new URL(databaseUrl).hostname
+);
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  connectionString: databaseUrl,
+  ssl: isLocalHost
+    ? false
+    : { rejectUnauthorized: false },
   max: 10,
   connectionTimeoutMillis: 10000,
   idleTimeoutMillis: 30000,

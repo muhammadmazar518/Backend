@@ -17,7 +17,11 @@ const createServicesTable = async () => {
     await pool.query(query);
     console.log("Services table ready");
   } catch (err) {
-    console.error("Error creating services table:", err.message);
+    console.error(
+      "Error creating services table:",
+      err.message
+    );
+    throw err;
   }
 };
 
