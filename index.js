@@ -3,95 +3,49 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const session = require("express-session");
 const passport = require("passport");
-
 dotenv.config();
-
-// =====================================================
-// ENVIRONMENT VARIABLES
-// =====================================================
-
 const requiredEnv = [
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
   "SESSION_SECRET",
 ];
-
 for (const envName of requiredEnv) {
   if (!process.env[envName]) {
     throw new Error(`${envName} is missing`);
   }
 }
-
-// =====================================================
-// STRIPE
-// =====================================================
-
 const stripe = require("stripe")(
   process.env.STRIPE_SECRET_KEY
 );
-
-// =====================================================
-// DATABASE
-// =====================================================
-
 const pool = require("./config/db");
-
-// =====================================================
-// PASSPORT
-// =====================================================
-
 require("./passport");
-
-// =====================================================
-// MODELS
-// =====================================================
-
 const { createUsersTable } = require("./models/User");
 const { createCoursesTable } = require("./models/Course");
-
-// =====================================================
-// ROUTES
-// =====================================================
-
+const { createServicesTable } = require("./models/Service");
+const { createProjectsTable } = require("./models/Project");
 const paymentRoutes = require("./routes/paymentRoutes");
-
 const app = express();
-
-// =====================================================
-// RAILWAY / PROXY
-// =====================================================
-
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
-
-// =====================================================
-// CORS
-// =====================================================
-
 const allowedOrigins = [
   "https://frontend-ygau.vercel.app",
   "http://localhost:5173",
 ];
-
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) {
         return callback(null, true);
       }
-
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-
       if (/\.vercel\.app$/.test(origin)) {
         return callback(null, true);
       }
-
       return callback(new Error("Not allowed by CORS"));
     },
-
     credentials: true,
 
     methods: [
@@ -109,12 +63,6 @@ app.use(
     ],
   })
 );
-
-// =====================================================
-// STRIPE WEBHOOK
-// Must be before express.json()
-// =====================================================
-
 app.post(
   "/api/payment/webhook",
   express.raw({
@@ -206,15 +154,8 @@ app.post(
   }
 );
 
-// =====================================================
-// JSON BODY
-// =====================================================
-
 app.use(express.json());
 
-// =====================================================
-// SESSION
-// =====================================================
 
 app.use(
   session({
@@ -239,16 +180,10 @@ app.use(
   })
 );
 
-// =====================================================
-// PASSPORT
-// =====================================================
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-// =====================================================
-// ROUTES
-// =====================================================
 
 app.use("/api/payment", paymentRoutes);
 
@@ -282,9 +217,6 @@ app.use(
   require("./routes/contactRoutes")
 );
 
-// =====================================================
-// DASHBOARD
-// =====================================================
 
 const {
   getDashboardStats,
@@ -300,9 +232,6 @@ app.get(
   getDashboardStats
 );
 
-// =====================================================
-// HEALTH CHECK
-// =====================================================
 
 app.get("/", (req, res) => {
   res.json({
@@ -310,9 +239,6 @@ app.get("/", (req, res) => {
   });
 });
 
-// =====================================================
-// 404
-// =====================================================
 
 app.use((req, res) => {
   res.status(404).json({
@@ -320,9 +246,6 @@ app.use((req, res) => {
   });
 });
 
-// =====================================================
-// ERROR HANDLER
-// =====================================================
 
 app.use((err, req, res, next) => {
   if (err.message === "Not allowed by CORS") {
@@ -336,10 +259,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// =====================================================
-// SERVER
-// =====================================================
-
 const PORT =
   process.env.PORT || 5000;
 
@@ -347,6 +266,8 @@ async function startServer() {
   try {
     await createUsersTable();
     await createCoursesTable();
+    await createServicesTable();
+    await createProjectsTable();
 
     app.listen(
       PORT,

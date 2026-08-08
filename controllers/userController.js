@@ -44,11 +44,26 @@ const getDashboardStats = async (req, res) => {
   try {
     const totalUsers = await pool.query("SELECT COUNT(*) FROM users");
 
+    const userResult = await pool.query(
+      "SELECT is_pro, has_purchased FROM users WHERE id = $1",
+      [req.user.id]
+    );
+    const user = userResult.rows[0];
+    const isPro = user?.is_pro || user?.has_purchased || false;
+
+    const lockedResult = await pool.query(
+      "SELECT COUNT(*) FROM courses WHERE locked = true"
+    );
+    const lockedCourses = isPro
+      ? 0
+      : parseInt(lockedResult.rows[0].count, 10);
+
     res.json({
       totalUsers: parseInt(totalUsers.rows[0].count),
       activeSessions: 1,
       revenue: 0,
       pendingTasks: 0,
+      lockedCourses,
     });
   } catch (err) {
     console.error(err.message);

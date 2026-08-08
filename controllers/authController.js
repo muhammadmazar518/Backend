@@ -47,13 +47,9 @@ const signup = async (req, res) => {
 
     res.status(201).json({ token, user });
   } catch (err) {
-  console.error("Signup Error:", err);
-
-  res.status(500).json({
-    message: err.message,
-    stack: err.stack,
-  });
-}
+    console.error("Signup Error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 const login = async (req, res) => {
