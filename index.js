@@ -41,7 +41,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const allowedOrigins = [
-  "https://frontend-ygau.vercel.app",
+  "https://frontend-ml44.vercel.app",
   "http://localhost:5173",
 ];
 
