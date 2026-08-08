@@ -3,7 +3,7 @@ const pool = require("../config/db");
 const getProfile = async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT id, name, email, is_pro, has_purchased, created_at, avatar FROM users WHERE id = $1",
+      "SELECT id, name, email, is_pro, has_purchased, plan, created_at, avatar FROM users WHERE id = $1",
       [req.user.id]
     );
 
@@ -51,6 +51,9 @@ const getDashboardStats = async (req, res) => {
     const user = userResult.rows[0];
     const isPro = user?.is_pro || user?.has_purchased || false;
 
+    const coursesResult = await pool.query("SELECT COUNT(*) FROM courses");
+    const totalCourses = parseInt(coursesResult.rows[0].count, 10);
+
     const lockedResult = await pool.query(
       "SELECT COUNT(*) FROM courses WHERE locked = true"
     );
@@ -58,12 +61,18 @@ const getDashboardStats = async (req, res) => {
       ? 0
       : parseInt(lockedResult.rows[0].count, 10);
 
+    const accessibleCourses = isPro
+      ? totalCourses
+      : Math.max(0, totalCourses - lockedCourses);
+
     res.json({
       totalUsers: parseInt(totalUsers.rows[0].count),
       activeSessions: 1,
       revenue: 0,
       pendingTasks: 0,
+      totalCourses,
       lockedCourses,
+      accessibleCourses,
     });
   } catch (err) {
     console.error(err.message);

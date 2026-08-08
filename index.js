@@ -120,6 +120,9 @@ app.post(
       const userId =
         checkoutSession.metadata?.userId;
 
+      const plan =
+        checkoutSession.metadata?.plan || null;
+
       const customerEmail =
         checkoutSession.customer_details?.email;
 
@@ -132,10 +135,11 @@ app.post(
             UPDATE users
             SET
               is_pro = $1,
-              has_purchased = $2
-            WHERE id = $3
+              has_purchased = $2,
+              plan = COALESCE($3, plan)
+            WHERE id = $4
             `,
-            [true, true, userId]
+            [true, true, plan, userId]
           );
         } else if (customerEmail) {
           result = await pool.query(
@@ -143,10 +147,11 @@ app.post(
             UPDATE users
             SET
               is_pro = $1,
-              has_purchased = $2
-            WHERE email = $3
+              has_purchased = $2,
+              plan = COALESCE($3, plan)
+            WHERE email = $4
             `,
-            [true, true, customerEmail]
+            [true, true, plan, customerEmail]
           );
         } else {
           return res.status(400).json({

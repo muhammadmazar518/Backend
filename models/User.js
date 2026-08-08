@@ -10,6 +10,7 @@ const createUsersTable = async () => {
       password VARCHAR(255) NOT NULL,
       is_pro BOOLEAN DEFAULT FALSE,
       has_purchased BOOLEAN DEFAULT FALSE,
+      plan VARCHAR(100),
       created_at TIMESTAMP DEFAULT NOW(),
       updated_at TIMESTAMP DEFAULT NOW()
     );
@@ -18,6 +19,7 @@ const createUsersTable = async () => {
     await pool.query(query);
     // ✅ avatar column add karo agar nahi hai
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT;`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan VARCHAR(100);`);
     console.log("Users table ready");
   } catch (err) {
     console.error("Error creating users table:", err.message);

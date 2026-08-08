@@ -30,6 +30,7 @@ router.post("/create-checkout-session", protect, async (req, res) => {
       cancel_url: `${process.env.FRONTEND_URL}/pricing`,
       metadata: {
         userId: req.user.id.toString(),
+        plan: planName,
       },
     });
 
@@ -48,15 +49,16 @@ router.post("/verify", async (req, res) => {
 
     if (session.payment_status === "paid") {
       const userId = session.metadata?.userId;
+      const plan = session.metadata?.plan || null;
 
       if (userId) {
         await pool.query(
-          "UPDATE users SET is_pro = true, has_purchased = true WHERE id = $1",
-          [userId]
+          "UPDATE users SET is_pro = true, has_purchased = true, plan = COALESCE($2, plan) WHERE id = $1",
+          [userId, plan]
         );
       }
 
-      res.json({ success: true, plan: "pro" });
+      res.json({ success: true, plan: plan || "pro" });
     } else {
       res.status(400).json({ success: false, message: "Payment not completed" });
     }
