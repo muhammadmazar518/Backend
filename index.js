@@ -1,4 +1,3 @@
-```js
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -7,7 +6,7 @@ const passport = require("passport");
 
 dotenv.config();
 
-// Stripe environment variable check
+// Stripe environment variables validation
 console.log(
   "STRIPE_SECRET_KEY exists:",
   !!process.env.STRIPE_SECRET_KEY
@@ -18,8 +17,17 @@ console.log(
   process.env.STRIPE_SECRET_KEY?.length
 );
 
+console.log(
+  "STRIPE_WEBHOOK_SECRET exists:",
+  !!process.env.STRIPE_WEBHOOK_SECRET
+);
+
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("STRIPE_SECRET_KEY is missing");
+}
+
+if (!process.env.STRIPE_WEBHOOK_SECRET) {
+  throw new Error("STRIPE_WEBHOOK_SECRET is missing");
 }
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
@@ -33,6 +41,7 @@ const paymentRoutes = require("./routes/paymentRoutes");
 
 const app = express();
 
+// Stripe webhook
 app.post(
   "/api/payment/webhook",
   express.raw({ type: "application/json" }),
@@ -123,11 +132,14 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-createUsersTable().then(() => {
-  createCoursesTable().then(() => {
+createUsersTable()
+  .then(() => createCoursesTable())
+  .then(() => {
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
+  })
+  .catch((err) => {
+    console.error("Server startup error:", err);
+    process.exit(1);
   });
-});
-```
