@@ -18,6 +18,7 @@ const stripe = require("stripe")(
   process.env.STRIPE_SECRET_KEY
 );
 const pool = require("./config/db");
+const PgSession = require("connect-pg-session")(session);
 require("./passport");
 const { createUsersTable } = require("./models/User");
 const { createCoursesTable } = require("./models/Course");
@@ -159,6 +160,7 @@ app.use(express.json());
 
 app.use(
   session({
+    store: new PgSession({ pool }),
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
