@@ -35,7 +35,12 @@ const updateProfile = async (req, res) => {
 
   try {
     const result = await pool.query(
-      "UPDATE users SET name = $1, email = $2, updated_at = NOW() WHERE id = $3 RETURNING id, name, email, is_pro, has_purchased, plan, created_at, avatar",
+      `UPDATE users
+       SET name = $1,
+           email = $2,
+           updated_at = NOW()
+       WHERE id = $3
+       RETURNING id, name, email, is_pro, has_purchased, plan, created_at, avatar`,
       [name, email, req.user.id]
     );
 
@@ -50,11 +55,6 @@ const updateProfile = async (req, res) => {
 
 const getDashboardStats = async (req, res) => {
   try {
-    // Dashboard stats ko browser cache nahi karega
-    res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-    res.set("Pragma", "no-cache");
-    res.set("Expires", "0");
-
     const totalUsersResult = await pool.query(
       "SELECT COUNT(*) FROM users"
     );
@@ -70,6 +70,7 @@ const getDashboardStats = async (req, res) => {
       user?.is_pro || user?.has_purchased
     );
 
+    // ALL courses in database
     const coursesResult = await pool.query(
       "SELECT COUNT(*) FROM courses"
     );
@@ -78,6 +79,7 @@ const getDashboardStats = async (req, res) => {
       coursesResult.rows[0].count
     );
 
+    // Locked courses
     const lockedResult = await pool.query(
       "SELECT COUNT(*) FROM courses WHERE locked = true"
     );
@@ -93,30 +95,34 @@ const getDashboardStats = async (req, res) => {
     const accessibleCourses = isPro
       ? totalCourses
       : Math.max(
-        0,
-        totalCourses - lockedCourseCount
-      );
+          0,
+          totalCourses - lockedCourseCount
+        );
 
     return res.json({
-      totalUsers: Number(totalUsersResult.rows[0].count),
+      totalUsers: Number(
+        totalUsersResult.rows[0].count
+      ),
       activeSessions: 1,
       revenue: 0,
       pendingTasks: 0,
 
-      // Dashboard ke liye important
       totalCourses,
       lockedCourses,
       accessibleCourses,
     });
-
   } catch (err) {
-    console.error("Dashboard stats error:", err);
+    console.error(
+      "Dashboard stats error:",
+      err
+    );
 
     return res.status(500).json({
       message: "Server error",
     });
   }
 };
+
 module.exports = {
   getProfile,
   updateProfile,
