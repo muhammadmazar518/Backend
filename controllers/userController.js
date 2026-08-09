@@ -50,6 +50,11 @@ const updateProfile = async (req, res) => {
 
 const getDashboardStats = async (req, res) => {
   try {
+    // Dashboard stats ko browser cache nahi karega
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
+
     const totalUsersResult = await pool.query(
       "SELECT COUNT(*) FROM users"
     );
@@ -97,10 +102,13 @@ const getDashboardStats = async (req, res) => {
       activeSessions: 1,
       revenue: 0,
       pendingTasks: 0,
+
+      // Dashboard ke liye important
       totalCourses,
       lockedCourses,
       accessibleCourses,
     });
+
   } catch (err) {
     console.error("Dashboard stats error:", err);
 
@@ -109,7 +117,6 @@ const getDashboardStats = async (req, res) => {
     });
   }
 };
-
 module.exports = {
   getProfile,
   updateProfile,
