@@ -54,18 +54,6 @@ const getDashboardStats = async (req, res) => {
       "SELECT COUNT(*) FROM users"
     );
 
-    const coursesResult = await pool.query(
-      "SELECT COUNT(*) FROM courses"
-    );
-
-    const lockedResult = await pool.query(
-      "SELECT COUNT(*) FROM courses WHERE locked = true"
-    );
-
-    const totalUsers = Number(totalUsersResult.rows[0].count);
-    const totalCourses = Number(coursesResult.rows[0].count);
-    const lockedCourses = Number(lockedResult.rows[0].count);
-
     const userResult = await pool.query(
       "SELECT is_pro, has_purchased FROM users WHERE id = $1",
       [req.user.id]
@@ -77,12 +65,35 @@ const getDashboardStats = async (req, res) => {
       user?.is_pro || user?.has_purchased
     );
 
+    const coursesResult = await pool.query(
+      "SELECT COUNT(*) FROM courses"
+    );
+
+    const totalCourses = Number(
+      coursesResult.rows[0].count
+    );
+
+    const lockedResult = await pool.query(
+      "SELECT COUNT(*) FROM courses WHERE locked = true"
+    );
+
+    const lockedCourseCount = Number(
+      lockedResult.rows[0].count
+    );
+
+    const lockedCourses = isPro
+      ? 0
+      : lockedCourseCount;
+
     const accessibleCourses = isPro
       ? totalCourses
-      : Math.max(0, totalCourses - lockedCourses);
+      : Math.max(
+        0,
+        totalCourses - lockedCourseCount
+      );
 
-    res.json({
-      totalUsers,
+    return res.json({
+      totalUsers: Number(totalUsersResult.rows[0].count),
       activeSessions: 1,
       revenue: 0,
       pendingTasks: 0,
@@ -93,7 +104,7 @@ const getDashboardStats = async (req, res) => {
   } catch (err) {
     console.error("Dashboard stats error:", err);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Server error",
     });
   }
